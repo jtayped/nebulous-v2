@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
-    output   = "../generated/prisma"
+    provider = "prisma-client"
+    output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -12,19 +12,6 @@ datasource db {
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
     // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
-}
-
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
 }
 
 // Necessary for Next auth
@@ -34,12 +21,12 @@ model Account {
     type                     String
     provider                 String
     providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
+    refresh_token            String?
+    access_token             String?
     expires_at               Int?
     token_type               String?
     scope                    String?
-    id_token                 String? // @db.Text
+    id_token                 String?
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
@@ -56,14 +43,16 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    id               String            @id @default(cuid())
+    name             String?
+    email            String?           @unique
+    emailVerified    DateTime?
+    image            String?
+    accounts         Account[]
+    sessions         Session[]
+    CloudCredentials CloudCredential[]
+    EdgeDevices      EdgeDevice[]
+    Clusters         Cluster[]
 }
 
 model VerificationToken {
@@ -72,4 +61,103 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+enum Provider {
+    GCP
+    AWS
+    EDGE
+}
+
+// Lifecycle status of a Cluster or Node
+enum Status {
+    PENDING // Resource is queued for creation/deletion
+    PROVISIONING // Resource is currently being created/configured
+    ACTIVE // Resource is running and ready for use
+    FAILED // An error occurred during the last operation
+    DELETING // Resource is being destroyed
+    STOPPED // Resource is shut down (for Cloud VMs)
+}
+
+// Supported cluster orchestration software
+enum ClusterSoftware {
+    K3S
+    NOMAD
+    DOCKER_SWARM
+    KUBERNETES
+}
+
+// Stores authentication tokens for cloud providers (Objective 000)
+model CloudCredential {
+    id        String   @id @default(cuid())
+    userId    String
+    provider  Provider // Uses the Provider Enum (GCP, AWS)
+    name      String
+    // The sensitive key/account data should be encrypted in a real app
+    accessKey String
+    secretKey String? // For AWS
+    projectId String? // For GCP
+    region    String // Default region for creation
+
+    user     User      @relation(fields: [userId], references: [id])
+    Clusters Cluster[]
+}
+
+// Stores connection info for local/on-premise machines (Objective 001)
+model EdgeDevice {
+    id           String  @id @default(cuid())
+    userId       String
+    name         String
+    ipAddress    String  @unique
+    sshUser      String
+    // SSH Private Key should be securely stored (or agent-forwarded)
+    // For this hackathon, storing the public key or a simple password might suffice
+    sshPublicKey String?
+
+    user User  @relation(fields: [userId], references: [id])
+    Node Node?
+}
+
+// Represents a collection of machines working together (the multi-cloud cluster)
+model Cluster {
+    id              String          @id @default(cuid())
+    userId          String
+    name            String
+    createdAt       DateTime        @default(now())
+    status          Status // Uses the Status Enum
+    clusterSoftware ClusterSoftware // Uses the ClusterSoftware Enum
+
+    // In a real app, this field should be encrypted :)
+    sshPrivateKey String?
+
+    // Optional: Reference to the credential used to create the cloud parts
+    credentialId String?
+    credential   CloudCredential? @relation(fields: [credentialId], references: [id])
+
+    user  User   @relation(fields: [userId], references: [id])
+    Nodes Node[]
+}
+
+// An individual machine, either Cloud VM or Edge Device
+model Node {
+    id           String   @id @default(cuid())
+    clusterId    String
+    name         String
+    provider     Provider // Uses the Provider Enum (GCP, AWS, EDGE)
+    status       Status // Uses the Status Enum
+    isMaster     Boolean  @default(false)
+    instanceType String // e.g., "e2-medium", "t2.micro"
+    cpuCores     Int
+    memoryGB     Int
+
+    // Connection details
+    publicIp  String?
+    privateIp String?
+    machineId String? // The provider's internal ID (e.g., GCP instance name, AWS InstanceId)
+
+    // Link to the EdgeDevice if it's an EDGE node
+    edgeDeviceId String?     @unique
+    edgeDevice   EdgeDevice? @relation(fields: [edgeDeviceId], references: [id])
+
+    cluster Cluster @relation(fields: [clusterId], references: [id])
 }
