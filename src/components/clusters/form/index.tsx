@@ -19,8 +19,11 @@ import NameField from "./fields/name";
 import SoftwareField from "./fields/software";
 import CloudNodesField from "./fields/cloud-nodes";
 import EdgeDevicesField from "./fields/edge-devices";
+import { useRouter } from "next/navigation";
 
 const ClusterForm = () => {
+  const router = useRouter();
+
   const form = useForm<ClusterCreateType>({
     resolver: zodResolver(clusterSchema),
     defaultValues: {
@@ -43,6 +46,7 @@ const ClusterForm = () => {
 
   function onSubmit(data: ClusterCreateType) {
     createMutation.mutate(data);
+    router.push("/dashboard");
   }
 
   return (
