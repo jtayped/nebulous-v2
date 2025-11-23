@@ -2,21 +2,24 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 1. Copy package files
+# 1. Install dependencies
 COPY package*.json ./
-
-# 2. Copy prisma folder
 COPY prisma ./prisma/
-
-# 3. Install dependencies
 RUN npm install
 
-# 4. Copy the rest of the source code
+# 2. Copy source code
 COPY . .
 
+# 3. Build the app
 ARG SKIP_ENV_VALIDATION=1
 RUN npm run build
 
+RUN cp -r public .next/standalone/
+
+# Copy the '.next/static' folder (CSS, JS chunks, fonts)
+RUN cp -r .next/static .next/standalone/.next/
+
 EXPOSE 3000
 
+# Start the optimized standalone server directly
 CMD ["node", ".next/standalone/server.js"]
