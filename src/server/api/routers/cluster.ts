@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { Provider, Status } from "@/generated/prisma/enums";
 import { TRPCError } from "@trpc/server";
 import { clusterSchema } from "@/validators/cluster";
+import { provisionCluster } from "@/server/lib/provisioning";
 
 export const clusterRouter = createTRPCRouter({
   create: protectedProcedure
@@ -108,9 +109,8 @@ export const clusterRouter = createTRPCRouter({
         return cluster;
       });
 
-      // 3. TRIGGER ASYNC PROVISIONING HERE
-      // In a real app: await provisioningQueue.add('provision', { clusterId: result.id })
-      console.log(`[Job] Provisioning triggered for Cluster ${result.id}`);
+      // Provision the cluster
+      void provisionCluster(result.id);
 
       return {
         success: true,

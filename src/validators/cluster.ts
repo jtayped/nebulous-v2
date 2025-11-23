@@ -10,7 +10,7 @@ export const clusterSchema = z.object({
       z.object({
         provider: z.enum([Provider.AWS, Provider.GCP]),
         instanceType: z.string().min(1),
-        isMaster: z.boolean().default(false),
+        isMaster: z.boolean().default(false).optional(),
       }),
     )
     .optional(),
