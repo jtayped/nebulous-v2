@@ -1,24 +1,11 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { Provider } from "@/generated/prisma/enums";
 import { TRPCError } from "@trpc/server";
+import { credentialsSchema } from "@/validators/credentials";
 
 export const credentialsRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(
-      z.object({
-        provider: z.enum([Provider.AWS, Provider.GCP]),
-        name: z.string().min(1, "Name is required."),
-        region: z
-          .string()
-          .min(1, "Default region is required (e.g., eu-west-3)."),
-        accessKey: z
-          .string()
-          .min(1, "Access Key (or Service Account data) is required."),
-        secretKey: z.string().optional(),
-        projectId: z.string().optional(),
-      }),
-    )
+    .input(credentialsSchema)
     .mutation(async ({ ctx, input }) => {
       // Create credential linked to the logged-in user
       const credential = await ctx.db.cloudCredential.create({

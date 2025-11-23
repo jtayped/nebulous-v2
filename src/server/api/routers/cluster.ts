@@ -1,29 +1,12 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { ClusterSoftware, Provider, Status } from "@/generated/prisma/enums";
+import { Provider, Status } from "@/generated/prisma/enums";
 import { TRPCError } from "@trpc/server";
+import { clusterSchema } from "@/validators/cluster";
 
 export const clusterRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(
-      z.object({
-        name: z.string().min(1, "Cluster name is required."),
-        software: z.nativeEnum(ClusterSoftware),
-        // Cloud Nodes configuration
-        cloudNodes: z
-          .array(
-            z.object({
-              provider: z.enum([Provider.AWS, Provider.GCP]),
-              instanceType: z.string().min(1),
-              isMaster: z.boolean().default(false),
-            }),
-          )
-          .optional(),
-        // Edge Device IDs selected from the list
-        edgeDeviceIds: z.array(z.string()).optional(),
-        credentialId: z.string().min(1).optional(),
-      }),
-    )
+    .input(clusterSchema)
     .mutation(async ({ ctx, input }) => {
       // 1. Validation
       if (

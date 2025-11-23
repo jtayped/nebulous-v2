@@ -1,18 +1,11 @@
-import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { Status } from "@/generated/prisma/enums";
 import { TRPCError } from "@trpc/server";
+import { deploymentSchema } from "@/validators/deployment";
 
 export const deploymentRouter = createTRPCRouter({
   deploy: protectedProcedure
-    .input(
-      z.object({
-        clusterId: z.string().min(1),
-        deploymentName: z.string().min(1, "Deployment name is required."),
-        payloadType: z.enum(["DOCKER_IMAGE", "K8S_MANIFEST", "NOMAD_JOB"]),
-        payloadContent: z.string().min(1, "Payload content is required."),
-      }),
-    )
+    .input(deploymentSchema)
     .mutation(async ({ ctx, input }) => {
       // 1. Fetch Cluster and Master Node
       const cluster = await ctx.db.cluster.findUnique({

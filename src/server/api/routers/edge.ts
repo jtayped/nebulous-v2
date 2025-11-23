@@ -1,17 +1,11 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { edgeSchema } from "@/validators/edge";
 
 export const edgeRouter = createTRPCRouter({
   register: protectedProcedure
-    .input(
-      z.object({
-        name: z.string().min(1, "Name is required."),
-        ipAddress: z.string().ip("Must be a valid IP address."),
-        sshUser: z.string().min(1, "SSH username is required."),
-        sshPublicKey: z.string().optional(),
-      }),
-    )
+    .input(edgeSchema)
     .mutation(async ({ ctx, input }) => {
       // check if IP already exists globally or for user (Schema says IP is unique globally)
       const existing = await ctx.db.edgeDevice.findUnique({
