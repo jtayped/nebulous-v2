@@ -107,7 +107,7 @@ const DeploymentDialog = ({
             <Textarea
               id="content"
               placeholder={placeholder}
-              className="min-h-[200px] font-mono text-xs"
+              className="max-h-[250px] min-h-[150px] font-mono text-xs"
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />

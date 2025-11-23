@@ -79,6 +79,34 @@ export async function createGcpInstance(
   };
 }
 
+export async function getGcpPublicIp(
+  config: GcpConfig,
+  instanceName: string,
+): Promise<string | undefined> {
+  const credentials = JSON.parse(config.credentialsJson) as object;
+  const client = new InstancesClient({
+    credentials,
+    projectId: config.projectId,
+  });
+
+  try {
+    // Fetch the instance details
+    const [instance] = await client.get({
+      project: config.projectId,
+      zone: config.zone,
+      instance: instanceName,
+    });
+
+    // GCP structure: networkInterfaces[0] -> accessConfigs[0] -> natIP
+    return (
+      instance.networkInterfaces?.[0]?.accessConfigs?.[0]?.natIP ?? undefined
+    );
+  } catch (error) {
+    console.error(`[GCP] Failed to get IP for ${instanceName}`, error);
+    return undefined;
+  }
+}
+
 export async function deleteGcpInstance(
   config: GcpConfig,
   instanceName: string,

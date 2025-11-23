@@ -1,7 +1,7 @@
 import { db } from "@/server/db";
 import { generateSSHKeyPair } from "./keys";
 import { createAwsInstance, getAwsPublicIp } from "./aws";
-import { createGcpInstance } from "./gcp";
+import { createGcpInstance, getGcpPublicIp } from "./gcp";
 import { executeRemoteCommand, INSTALL_SCRIPTS } from "./ssh";
 import { Provider, Status, ClusterSoftware } from "@/generated/prisma/enums";
 
@@ -134,6 +134,16 @@ export async function provisionCluster(clusterId: string) {
             region: node.credential.region,
             accessKeyId: node.credential.accessKey,
             secretAccessKey: node.credential.secretKey!,
+          },
+          node.machineId!,
+        );
+        publicIp = ip ?? "";
+      } else if (node.provider === Provider.GCP) {
+        const ip = await getGcpPublicIp(
+          {
+            projectId: node.credential.projectId!,
+            credentialsJson: node.credential.accessKey,
+            zone: `${node.credential.region}-b`,
           },
           node.machineId!,
         );
