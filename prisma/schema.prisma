@@ -99,8 +99,8 @@ model CloudCredential {
     projectId String? // For GCP
     region    String // Default region for creation
 
-    user     User      @relation(fields: [userId], references: [id])
-    Clusters Cluster[]
+    user  User   @relation(fields: [userId], references: [id])
+    nodes Node[]
 }
 
 // Stores connection info for local/on-premise machines (Objective 001)
@@ -130,10 +130,6 @@ model Cluster {
     // In a real app, this field should be encrypted :)
     sshPrivateKey String?
 
-    // Optional: Reference to the credential used to create the cloud parts
-    credentialId String?
-    credential   CloudCredential? @relation(fields: [credentialId], references: [id])
-
     user  User   @relation(fields: [userId], references: [id])
     Nodes Node[]
 }
@@ -149,6 +145,9 @@ model Node {
     instanceType String // e.g., "e2-medium", "t2.micro"
     cpuCores     Int
     memoryGB     Int
+
+    credentialId String
+    credential   CloudCredential @relation(fields: [credentialId], references: [id])
 
     // Connection details
     publicIp  String?

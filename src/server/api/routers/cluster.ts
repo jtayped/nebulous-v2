@@ -20,25 +20,6 @@ export const clusterRouter = createTRPCRouter({
         });
       }
 
-      // If cloud nodes are requested, ensure credential exists
-      if (input.cloudNodes && input.cloudNodes.length > 0) {
-        if (!input.credentialId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Credential required for Cloud Nodes.",
-          });
-        }
-        const cred = await ctx.db.cloudCredential.findFirst({
-          where: { id: input.credentialId, userId: ctx.session.user.id },
-        });
-        if (!cred) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Invalid credential.",
-          });
-        }
-      }
-
       // 2. Create Cluster and Nodes in a Transaction
       const result = await ctx.db.$transaction(async (tx) => {
         // A. Create the Cluster Shell
@@ -48,7 +29,6 @@ export const clusterRouter = createTRPCRouter({
             name: input.name,
             status: Status.PENDING, // System will pick this up later
             clusterSoftware: input.software,
-            credentialId: input.credentialId,
           },
         });
 
@@ -64,6 +44,7 @@ export const clusterRouter = createTRPCRouter({
               instanceType: node.instanceType,
               cpuCores: 0, // Placeholder until provisioned
               memoryGB: 0, // Placeholder until provisioned
+              credentialId: node.credentialId,
             })),
           });
         }

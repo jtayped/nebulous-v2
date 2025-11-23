@@ -28,7 +28,6 @@ const ClusterForm = () => {
       software: undefined,
       cloudNodes: undefined,
       edgeDeviceIds: undefined,
-      credentialId: undefined,
     },
   });
 

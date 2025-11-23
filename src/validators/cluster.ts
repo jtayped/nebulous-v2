@@ -11,12 +11,12 @@ export const clusterSchema = z.object({
         provider: z.enum([Provider.AWS, Provider.GCP]),
         instanceType: z.string().min(1),
         isMaster: z.boolean().default(false).optional(),
+        credentialId: z.string().min(1),
       }),
     )
     .optional(),
   // Edge Device IDs selected from the list
   edgeDeviceIds: z.array(z.string()).optional(),
-  credentialId: z.string().min(1).optional(),
 });
 
 export type ClusterCreateType = z.infer<typeof clusterSchema>;

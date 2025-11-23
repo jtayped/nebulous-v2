@@ -2,6 +2,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { Status } from "@/generated/prisma/enums";
 import { TRPCError } from "@trpc/server";
 import { deploymentSchema } from "@/validators/deployment";
+import { executeRemoteCommand } from "@/server/lib/ssh";
 
 export const deploymentRouter = createTRPCRouter({
   deploy: protectedProcedure
@@ -53,13 +54,12 @@ export const deploymentRouter = createTRPCRouter({
         });
       }
 
-      // 2. CALL SSH SERVICE HERE
-      // In a real app, you would import your SSH utility:
-      // await sshExec(targetIp, "root", `kubectl apply -f ...`);
-
-      console.log(
-        `[Deployment] Connecting to ${targetIp} to deploy ${input.deploymentName}`,
-      );
+      await executeRemoteCommand(targetIp, "root", "", [
+        "kubectl",
+        "apply",
+        "-f",
+        "...",
+      ]);
 
       return {
         success: true,
