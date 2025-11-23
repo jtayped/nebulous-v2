@@ -18,7 +18,7 @@ export async function createGcpInstance(
   params: CreateParams,
 ) {
   // Parse the JSON string credentials
-  const credentials = JSON.parse(config.credentialsJson);
+  const credentials = JSON.parse(config.credentialsJson) as object;
 
   const client = new InstancesClient({
     credentials,
@@ -33,7 +33,7 @@ export async function createGcpInstance(
   // Format key specifically for GCP metadata
   const gcpKeyVal = formatGcpKey("ubuntu", params.publicKey);
 
-  const [response, operation] = await client.insert({
+  const [,operation] = await client.insert({
     project: config.projectId,
     zone,
     instanceResource: {
