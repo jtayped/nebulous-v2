@@ -7,6 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   output: "standalone",
+  serverExternalPackages: ["ssh2", "node-ssh"],
 };
 
 export default config;

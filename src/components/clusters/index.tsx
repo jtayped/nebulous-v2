@@ -5,7 +5,6 @@ import React from "react";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Server, Box, Network } from "lucide-react";
 import { ClusterSoftware } from "@/generated/prisma/enums";
