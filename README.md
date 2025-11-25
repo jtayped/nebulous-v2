@@ -1,29 +1,154 @@
-# Create T3 App
+# ☁️ NebulOuS: Multi-Cloud & Edge Cluster Manager
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+[![HackEPS 2025 (Eurecat) Winner](https://img.shields.io/badge/🏆_HackEPS_Eurecat_2025-2nd_Prize-gold)](https://hackeps.com/)
+[![Stack](https://img.shields.io/badge/Stack-T3-blue)](https://create.t3.gg/)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-## What's next? How do I make an app with this?
+> **2nd Prize Winner at HackEPS 2025 (Eurecat Challenge)** > A platform to seamlessly deploy and manage hybrid computing clusters across **AWS**, **Google Cloud Platform**, and **Edge devices**.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+---
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## 📸 Screenshots
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+| Dashboard View | Cluster Details |
+|:---:|:---:|
+| <img src="./screenshots/main-dashboard.png" width="400" alt="Dashboard"> | <img src="./screenshots/cluster-dashboard.png" width="400" alt="Cluster Details"> |
 
-## Learn More
+| Cloud Credentials | Docker Swarm/K3s |
+|:---:|:---:|
+| <img src="./screenshots/credentials.png" width="400" alt="Credentials"> | <img src="./screenshots/cluster-creation.png" width="400" alt="Orchestration"> |
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+---
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## 📖 The Story: The 12-Hour Pivot
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+We entered HackEPS 2025 with a plan: build a high-performance backend using **Go**, **Connect-Go**, and **Protocol Buffers** for end-to-end type safety.
 
-## How do I deploy this?
+However, at the **12-hour mark** (halfway through the hackathon), we hit a wall. The complexity of implementing strict Protobuf definitions while racing against the clock meant we had a great architecture diagram, but zero working features.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+**We made a critical decision:** We scrapped the entire codebase and started from scratch using the **T3 Stack** (Next.js + tRPC). This allowed us to iterate at lightning speed, leveraging full-stack type safety without the boilerplate, and ultimately deliver a winning product in the remaining 12 hours.
+
+---
+
+## 🚀 Features
+
+* **Multi-Cloud Provisioning:** Create Virtual Machines on **AWS (EC2)** and **Google Cloud (Compute Engine)** from a single interface.
+* **Orchestration Agnostic:** Designed to bootstrap nodes for **Docker Swarm**, or **K3s** (Kubernetes).
+* **Real-time Status:** Tracks the provisioning lifecycle (Provisioning -> SSH Check -> Active).
+* **Credential Management:** Securely store and manage API keys for multiple cloud providers.
+* **SSH Polling Mechanism:** Automatically verifies node health and connectivity upon creation.
+
+---
+
+## 🛠️ Tech Stack
+
+This project was built using the **T3 Stack** philosophy:
+
+* **Framework:** [Next.js](https://nextjs.org/) (App Router)
+* **Language:** TypeScript
+* **API/Communication:** [tRPC](https://trpc.io/) (End-to-end type safety)
+* **Database:** PostgreSQL (via [Prisma ORM](https://www.prisma.io/))
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [ShadcnUI](https://ui.shadcn.com/)
+* **Cloud SDKs:**
+    * `@aws-sdk/client-ec2`
+    * `@google-cloud/compute`
+* **Infrastructure:** Hosted on a [Clouding.io](https://clouding.io/) VPS.
+
+---
+
+## 🏗️ Architecture & Workflow
+
+Since we didn't have time to implement a complex asynchronous queue system (Redis/BullMQ) during the hackathon, we devised a robust polling architecture:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant NextJS_Backend
+    participant Database
+    participant AWS_GCP
+    
+    User->>NextJS_Backend: Create Cluster (Request)
+    NextJS_Backend->>Database: Create "Pending" Entry
+    NextJS_Backend->>AWS_GCP: API Call to Provision VM
+    AWS_GCP-->>NextJS_Backend: VM Created (IP Assigned)
+    NextJS_Backend->>Database: Update IP & Status "Booting"
+    
+    loop SSH Polling
+        NextJS_Backend->>AWS_GCP: Attempt SSH Connection
+        AWS_GCP-->>NextJS_Backend: Connection Success?
+    end
+    
+    NextJS_Backend->>Database: Update Status "Active"
+    NextJS_Backend-->>User: Cluster Ready
+````
+
+-----
+
+## 🔮 Future Improvements
+
+Given the 24-hour time constraint, there were features we designed but couldn't fully implement:
+
+1.  **AI Orchestration (The "NebulOuS" Challenge):**
+
+      * *Goal:* Integrate an LLM to interpret natural language requests (e.g., "I need a low-latency cluster in Europe for under €5/day") and automatically select the best provider/region.
+      * *Status:* Logic designed, but not connected to the live pricing API.
+
+2.  **Asynchronous Job Queue:**
+
+      * *Improvement:* Replace the long-running HTTP requests with **Redis + BullMQ**. This would allow the backend to handle provisioning in the background without blocking the UI.
+
+3.  **WebSockets:**
+
+      * *Improvement:* Use WebSockets to push state updates to the frontend instead of client-side refreshing.
+
+-----
+
+## 💻 Getting Started
+
+### Prerequisites
+
+  * Node.js 18+
+  * PostgreSQL Database
+
+### Installation
+
+1.  **Clone the repo**
+
+    ```bash
+    git clone [https://github.com/jtayped/hackeps2025-eurecat](https://github.com/jtayped/hackeps2025-eurecat.git)
+    cd nebulous-manager
+    ```
+
+2.  **Install dependencies**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup**
+    Create a `.env` file based on `.env.example`:
+
+    ```env
+    cp .env.local .env
+    ```
+
+4.  **Run the database migration**
+
+    ```bash
+    npm run db:migrate
+    ```
+
+5.  **Start the development server**
+
+    ```bash
+    npm run dev
+    ```
+
+-----
+
+## 👥 Authors
+
+  * **Joel Taylor** - [LinkedIn](https://www.linkedin.com/in/jtayped/)
+  * **Maria Aliet** - [LinkedIn](https://www.linkedin.com/in/maria-aliet-060bb72aa/)
+
+-----
