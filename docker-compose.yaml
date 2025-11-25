@@ -1,28 +1,25 @@
 services:
-  # Service 1: Your Next.js App
   app:
     build: .
     container_name: nextjs_app
     restart: always
     ports:
-      - "3000:3000" # Maps localhost:3000 on VPS to container:3000
+      - "3000:3000"
     env_file:
       - .env
     depends_on:
       - db
 
-  # Service 2: PostgreSQL Database
   db:
     image: postgres:15-alpine
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: joel
-      POSTGRES_PASSWORD: Tayped123+
-      POSTGRES_DB: nebulous
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
 
-# Persist database data so it survives restarts
 volumes:
   db_data:
