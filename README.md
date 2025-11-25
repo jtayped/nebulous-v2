@@ -14,9 +14,9 @@
 |:---:|:---:|
 | <img src="./screenshots/main-dashboard.png" width="400" alt="Dashboard"> | <img src="./screenshots/cluster-dashboard.png" width="400" alt="Cluster Details"> |
 
-| Cloud Credentials | Docker Swarm/K3s |
+| Cloud Credentials | Cluster Creation |
 |:---:|:---:|
-| <img src="./screenshots/credentials.png" width="400" alt="Credentials"> | <img src="./screenshots/cluster-creation.png" width="400" alt="Orchestration"> |
+| <img src="./screenshots/credentials.png" width="400" alt="Credentials"> | <img src="./screenshots/cluster-creation.png" width="400" alt="Cluster creation"> |
 
 ---
 
@@ -115,8 +115,8 @@ Given the 24-hour time constraint, there were features we designed but couldn't 
 1.  **Clone the repo**
 
     ```bash
-    git clone [https://github.com/jtayped/hackeps2025-eurecat](https://github.com/jtayped/hackeps2025-eurecat.git)
-    cd nebulous-manager
+    git clone https://github.com/jtayped/hackeps2025-eurecat.git
+    cd hackeps2025-eurecat
     ```
 
 2.  **Install dependencies**
