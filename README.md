@@ -128,6 +128,8 @@ Given the 24-hour time constraint, there were features we designed but couldn't 
 3.  **Environment Setup**
     Create a `.env` file based on `.env.example`:
 
+    > You have to create a [Resend](https://resend.com/) account and get an API key.
+
     ```env
     cp .env.local .env
     ```
